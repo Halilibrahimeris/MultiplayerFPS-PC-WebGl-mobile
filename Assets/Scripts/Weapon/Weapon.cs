@@ -18,8 +18,10 @@ public class Weapon : MonoBehaviour
     public int ammo = 30;
     public int magAmmo = 30;
     protected bool CanCallAmmo = true;
+    public LayerMask hitLayer;
     [Header("UI")]
     public TextMeshProUGUI ammoText;
+    public TextMeshProUGUI PlayerInfoText;
 
     [Header("Animation")]
     public Animator _animator;
@@ -30,6 +32,7 @@ public class Weapon : MonoBehaviour
     {
         ammoText.text = ammo + "/" + MaxAmmo;
         FireRate = (1 / FireAnim.length) * FireAnimationMultiplayer;
+        PlayerInfoText.text = "";
     }
 
     // Update is called once per frame
@@ -60,7 +63,7 @@ public class Weapon : MonoBehaviour
                 Reload();
             }
 
-            if (Input.GetKeyDown(KeyCode.R) && CanCallAmmo && MaxAmmo > 0)
+            if (Input.GetKeyDown(KeyCode.R) && CanCallAmmo && MaxAmmo > 0 && ammo < magAmmo)
             {
                 Reload();
             }
@@ -113,13 +116,15 @@ public class Weapon : MonoBehaviour
 
         RaycastHit hit;
 
-        if(Physics.Raycast(ray.origin,ray.direction,out hit, 100f))
+        if(Physics.Raycast(ray.origin,ray.direction,out hit, 100f, hitLayer))
         {
             if (hit.transform.gameObject.GetComponent<Health>())
             {
                 Debug.Log(hit.collider.gameObject.name);
                 int hitIndex = hit.collider.gameObject.GetComponent<BodyIndex>().id;
                 hit.transform.gameObject.GetComponent<PhotonView>().RPC("TakeDamage", RpcTarget.All, Damage,hitIndex);
+                Health helth = hit.transform.GetComponentInParent<Health>();
+                PlayerInfoText.text = helth.gameObject.name + "/ Health :" + helth.CurrentHealth.ToString();
             }
         }
 

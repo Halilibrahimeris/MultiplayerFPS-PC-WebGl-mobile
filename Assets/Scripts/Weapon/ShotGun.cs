@@ -1,6 +1,7 @@
 using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class ShotGun : Weapon
@@ -36,7 +37,7 @@ public class ShotGun : Weapon
 
             Ray ray = new Ray(FirePoint.transform.position, spread);
 
-            if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+            if (Physics.Raycast(ray, out RaycastHit hit, 100f, hitLayer))
             {
                 // SpawnBullet trail
                 CreateBulletTrail(ray.origin, hit.point);
@@ -44,7 +45,10 @@ public class ShotGun : Weapon
                 if (hit.transform.gameObject.GetComponent<Health>())
                 {
                     Debug.Log(hit.collider.gameObject.name);
-                    hit.transform.gameObject.GetComponent<PhotonView>().RPC("TakeDamage", RpcTarget.All, Damage, hit.collider);
+                    int hitIndex = hit.collider.gameObject.GetComponent<BodyIndex>().id;
+                    hit.transform.gameObject.GetComponent<PhotonView>().RPC("TakeDamage", RpcTarget.All, Damage, hitIndex);
+                    Health helth = hit.transform.GetComponentInParent<Health>();
+                    PlayerInfoText.text = helth.gameObject.name + "/ Health :" + helth.CurrentHealth.ToString();
                 }
             }
         }
