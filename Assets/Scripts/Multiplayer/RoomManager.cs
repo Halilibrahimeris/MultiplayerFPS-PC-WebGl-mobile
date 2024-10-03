@@ -9,7 +9,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public GameObject[] players;
 
-    public Transform SpawnPoint;
+    public Transform[] SpawnPoints;
 
     private void Awake()
     {
@@ -50,7 +50,8 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public void ReSpawnPlayer()
     {
-        GameObject _player = PhotonNetwork.Instantiate(players[GameManager.instance.Index].name, SpawnPoint.position, Quaternion.identity);
+        int randomPos = Random.Range(0, SpawnPoints.Length);
+        GameObject _player = PhotonNetwork.Instantiate(players[GameManager.instance.Index].name, SpawnPoints[randomPos].position, Quaternion.identity);
         _player.GetComponent<Health>().isLocal = true;
         _player.GetComponent<PlayerSetup>().isLocalPlayer();
         _player.GetComponentInChildren<Health>().SetHealthTexColor(GameManager.instance.classes[GameManager.instance.Index].materialForPlayer.color);

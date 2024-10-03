@@ -9,7 +9,6 @@ public class Health : MonoBehaviour
     public bool isLocal;
     public bool CanSpawn = true;
 
-    [SerializeField]private Collider[] colliders = new Collider[3];
     public void SetHealthTexColor(Color color)
     {
         HealthText.text = CurrentHealth.ToString();
@@ -17,19 +16,21 @@ public class Health : MonoBehaviour
     }
 
     [PunRPC]
-    public void TakeDamage(int Damage, Collider hit)
+    public void TakeDamage(int Damage, int hit)
     {
-        if (hit == colliders[0])//head
+        switch (hit)
         {
-            CurrentHealth -= (Damage + 10);
-        }
-        else if (hit == colliders[1])//body
-        {
-            CurrentHealth -= Damage;
-        }
-        else//leg
-        {
-            CurrentHealth -= (Damage / 2);
+            case 0:
+                CurrentHealth -= (Damage + 10);
+                break;
+             case 1:
+                CurrentHealth -= Damage;
+                break;
+            case 2:
+                CurrentHealth -= (Damage / 2);
+                break;
+            default:
+                break;
         }
         HealthText.text = CurrentHealth.ToString();
         if(CurrentHealth <= 0)

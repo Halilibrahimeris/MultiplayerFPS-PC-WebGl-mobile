@@ -25,10 +25,11 @@ public class Weapon : MonoBehaviour
     public Animator _animator;
     public AnimationClip ReloadAnim;
     public AnimationClip FireAnim;
+    public int FireAnimationMultiplayer = 1;
     private void Start()
     {
         ammoText.text = ammo + "/" + MaxAmmo;
-        FireRate = 1 / FireAnim.length;
+        FireRate = (1 / FireAnim.length) * FireAnimationMultiplayer;
     }
 
     // Update is called once per frame
@@ -117,7 +118,8 @@ public class Weapon : MonoBehaviour
             if (hit.transform.gameObject.GetComponent<Health>())
             {
                 Debug.Log(hit.collider.gameObject.name);
-                hit.transform.gameObject.GetComponent<PhotonView>().RPC("TakeDamage", RpcTarget.All, Damage, hit.collider);
+                int hitIndex = hit.collider.gameObject.GetComponent<BodyIndex>().id;
+                hit.transform.gameObject.GetComponent<PhotonView>().RPC("TakeDamage", RpcTarget.All, Damage,hitIndex);
             }
         }
 
