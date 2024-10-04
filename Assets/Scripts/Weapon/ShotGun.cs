@@ -45,10 +45,14 @@ public class ShotGun : Weapon
                 if (hit.transform.gameObject.GetComponent<Health>())
                 {
                     Debug.Log(hit.collider.gameObject.name);
-                    int hitIndex = hit.collider.gameObject.GetComponent<BodyIndex>().id;
-                    hit.transform.gameObject.GetComponent<PhotonView>().RPC("TakeDamage", RpcTarget.All, Damage, hitIndex);
-                    Health helth = hit.transform.GetComponentInParent<Health>();
-                    PlayerInfoText.text = helth.gameObject.name + "/ Health :" + helth.CurrentHealth.ToString();
+                    
+                    if(hit.transform.GetComponent<BodyIndex>() != null)
+                    {
+                        int hitIndex = hit.collider.gameObject.GetComponent<BodyIndex>().id;
+                        hit.transform.gameObject.GetComponent<PhotonView>().RPC("TakeDamage", RpcTarget.All, Damage, hitIndex);
+                        Health helth = hit.transform.GetComponentInParent<Health>();
+                        PlayerInfoText.text = helth.gameObject.name + "/ Health :" + helth.CurrentHealth.ToString();
+                    }
                 }
             }
         }
