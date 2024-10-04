@@ -603,7 +603,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   players:
-  - {fileID: 9040910064847341878, guid: 893c49da8a022c344b540994ea6338f9, type: 3}
+  - {fileID: 7892109131612369183, guid: 893c49da8a022c344b540994ea6338f9, type: 3}
   - {fileID: 451235059584013503, guid: 0e439091ae65f2c4f956c04e8ad34f3c, type: 3}
   - {fileID: 4553240518939737039, guid: cf9531e3dfa0aee4a9cada482803c66e, type: 3}
   SpawnPoints:

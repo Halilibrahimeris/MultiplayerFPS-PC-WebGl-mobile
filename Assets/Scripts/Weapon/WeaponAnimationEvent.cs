@@ -6,6 +6,9 @@ public class WeaponAnimationEvent : MonoBehaviour
 {
     public bool CanTake;
     public Animator animator;
+
+    [Header("Sounds")]
+    public SoundManager soundManager;
     public void CanTakeAnyThing()
     {
         animator.SetBool("CanTake", true);
@@ -16,5 +19,20 @@ public class WeaponAnimationEvent : MonoBehaviour
     {
         animator.SetBool("CanTake", false);
         CanTake = false;
+    }
+
+    public void PlayStepSounds()
+    {
+        soundManager.PlayFootStep();
+    }
+
+    public void PlayShootSound()
+    {
+        soundManager.PlayFireSound();
+    }
+    
+    public void PlayReloadSound()
+    {
+        soundManager.PlayReloadSound();
     }
 }

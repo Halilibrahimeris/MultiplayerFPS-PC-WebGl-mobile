@@ -41,6 +41,9 @@ MonoBehaviour:
   - RespawnSpaceship
   - TakeDamage
   - SetHealth
+  - StepSound_RPC
+  - FireSound_RPC
+  - ReloadSondRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

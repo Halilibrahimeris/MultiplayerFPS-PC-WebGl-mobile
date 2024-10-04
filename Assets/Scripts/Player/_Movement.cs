@@ -13,9 +13,7 @@ public class _Movement : MonoBehaviour
     public Rigidbody rb;
     [SerializeField]private Animator _animator;
 
-    private bool isGrounded;
     private bool isSprinting;
-    private bool isJumping;
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -30,53 +28,27 @@ public class _Movement : MonoBehaviour
     void FixedUpdate()
     {
         isSprinting = Input.GetButton("Sprint");
-        //isJumping = Input.GetButton("Jump");
 
-        if (isGrounded)
+        if (_input.magnitude > 0.1f)
         {
-            if (isJumping)
+            rb.AddForce(CalculateMovement(isSprinting ? RunSpeed : walkSpeed), ForceMode.VelocityChange);
+            if (isSprinting)
             {
-                rb.AddForce(new Vector3(rb.velocity.x, JumpPower, rb.velocity.z));
-                // rb.velocity =
-            }
-            else if (_input.magnitude > 0.1f)
-            {
-                rb.AddForce(CalculateMovement(isSprinting ? RunSpeed : walkSpeed), ForceMode.VelocityChange);
-                if (isSprinting)
-                {
-                    SetAnimatorWalkRun(false, true);
-                }
-                else
-                {
-                    SetAnimatorWalkRun(true, false);
-                }
-
+                SetAnimatorWalkRun(false, true);
             }
             else
             {
-                rb.velocity = Vector3.zero;
-                SetAnimatorWalkRun(false, false);
+                SetAnimatorWalkRun(true, false);
             }
+
         }
         else
         {
-            if (_input.magnitude > 0.1f)
-            {
-                rb.AddForce(CalculateMovement(walkSpeed * airController), ForceMode.VelocityChange);
-            }
-            else
-            {
-                rb.velocity = Vector3.zero;
-            }
+            rb.velocity = Vector3.zero;
+            SetAnimatorWalkRun(false, false);
         }
-       
-        isGrounded = false;
-    }
 
-    private void OnTriggerStay(Collider collider)
-    {
-        isGrounded = true;
-    }   
+    } 
 
     Vector3 CalculateMovement(float _speed)
     {
