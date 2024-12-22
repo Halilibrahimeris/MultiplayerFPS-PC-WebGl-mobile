@@ -1,4 +1,5 @@
 using Photon.Pun;
+using Photon.Pun.UtilityScripts;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -13,12 +14,16 @@ public class Weapon : MonoBehaviour
     [Space]
     private float NextFire;
     public Camera _camera;
+
     [Header("Ammo")]
     public int MaxAmmo = 150;
     public int ammo = 30;
     public int magAmmo = 30;
     protected bool CanCallAmmo = true;
     public LayerMask hitLayer;
+    public GameObject bulletTrailPrefab;
+    public Transform TrailStartPos;
+
     [Header("UI")]
     public TextMeshProUGUI ammoText;
     public TextMeshProUGUI PlayerInfoText;
@@ -28,8 +33,11 @@ public class Weapon : MonoBehaviour
     public AnimationClip ReloadAnim;
     public AnimationClip FireAnim;
     public int FireAnimationMultiplayer = 1;
+
+    private WeaponAnimationEvent _WeaponAnimationEvent;
     private void Start()
     {
+        _WeaponAnimationEvent = GetComponentInChildren<WeaponAnimationEvent>();
         ammoText.text = ammo + "/" + MaxAmmo;
         FireRate = (1 / FireAnim.length) * FireAnimationMultiplayer;
         PlayerInfoText.text = "";
@@ -51,11 +59,13 @@ public class Weapon : MonoBehaviour
                 //recoil.CanRecoil = true;
                 Fire();
                 _animator.SetBool("Inspecting", false);
+                _WeaponAnimationEvent.EmptySound = false;
             }
 
             else if(Input.GetButton("Fire1") && NextFire <= 0 && ammo <= 0 && CanCallAmmo)
             {
                 Debug.Log("Mermi yok sesi çalacak");
+                _WeaponAnimationEvent.EmptySound = true;
             }
 
             if(ammo == 0 && CanCallAmmo && MaxAmmo > 0)
@@ -118,15 +128,54 @@ public class Weapon : MonoBehaviour
 
         if(Physics.Raycast(ray.origin,ray.direction,out hit, 100f, hitLayer))
         {
-            if (hit.transform.gameObject.GetComponent<Health>())
+            CreateBulletTrail(hit.point);
+
+            if (hit.transform.gameObject.GetComponentInParent<Health>() && !hit.collider.GetComponentInParent<Health>().isLocal)
             {
                 Debug.Log(hit.collider.gameObject.name);
                 int hitIndex = hit.collider.gameObject.GetComponent<BodyIndex>().id;
-                hit.transform.gameObject.GetComponent<PhotonView>().RPC("TakeDamage", RpcTarget.All, Damage,hitIndex);
+                int tempDamage = Damage;
+                switch (hitIndex)
+                {
+                    case 0:
+                        tempDamage += 10;
+                        break;
+                    case 1:
+                        tempDamage += 0;
+                        break;
+                    case 2:
+                        tempDamage /= 2;
+                        break;
+                    default:
+                        break;
+                }
                 Health helth = hit.transform.GetComponentInParent<Health>();
-                PlayerInfoText.text = helth.gameObject.name + "/ Health :" + helth.CurrentHealth.ToString();
+                if (tempDamage >= helth.CurrentHealth)
+                {
+                    RoomManager.Instance.kills++;
+                    RoomManager.Instance.SetHashes();
+                }
+
+                hit.transform.gameObject.GetComponent<PhotonView>().RPC("TakeDamage", RpcTarget.All, tempDamage);
+                PlayerSetup setup = hit.transform.GetComponent<PlayerSetup>();
+                PlayerInfoText.text = setup.myNick + "/ Health :" + helth.CurrentHealth.ToString();
             }
         }
 
+    }
+
+    protected void CreateBulletTrail(Vector3 end)
+    {
+        GameObject trail = Instantiate(bulletTrailPrefab, TrailStartPos.position, Quaternion.identity);
+        LineRenderer lineRenderer = trail.GetComponent<LineRenderer>();
+
+        if (lineRenderer != null)
+        {
+            lineRenderer.SetPosition(0, TrailStartPos.position);
+            lineRenderer.SetPosition(1, end);
+        }
+
+
+        Destroy(trail, 0.5f);
     }
 }

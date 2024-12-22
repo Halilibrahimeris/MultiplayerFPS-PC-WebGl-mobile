@@ -1,4 +1,5 @@
 using Photon.Pun;
+using Photon.Pun.UtilityScripts;
 using TMPro;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ public class Health : MonoBehaviour
     public TextMeshProUGUI HealthText;
     public bool isLocal;
     public bool CanSpawn = true;
-
+    public bool CanTakeDamage = true;
     public void SetHealthTexColor(Color color)
     {
         HealthText.text = CurrentHealth.ToString();
@@ -16,32 +17,23 @@ public class Health : MonoBehaviour
     }
 
     [PunRPC]
-    public void TakeDamage(int Damage, int hit)
+    public void TakeDamage(int Damage)
     {
-        switch (hit)
-        {
-            case 0:
-                CurrentHealth -= (Damage + 10);
-                break;
-             case 1:
-                CurrentHealth -= Damage;
-                break;
-            case 2:
-                CurrentHealth -= (Damage / 2);
-                break;
-            default:
-                break;
-        }
+        CurrentHealth -= Damage;
         HealthText.text = CurrentHealth.ToString();
         if(CurrentHealth <= 0)
         {
-            Destroy(gameObject);
+
             if(isLocal && CanSpawn)
             {
+                RoomManager.Instance.death++;
+                RoomManager.Instance.SetHashes();
                 RoomManager.Instance.ReSpawnPlayer();
                 CanSpawn = false;
             }
+
             HealthText.text = "0";
+            Destroy(gameObject);
         }
     }
 }

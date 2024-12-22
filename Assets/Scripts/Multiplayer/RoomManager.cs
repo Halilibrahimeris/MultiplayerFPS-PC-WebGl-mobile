@@ -1,16 +1,23 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using Hastable = ExitGames.Client.Photon.Hashtable;
+using Photon.Realtime;
+using System.Collections.Generic;
 public class RoomManager : MonoBehaviourPunCallbacks
 {
     public static RoomManager Instance;
-
 
     public GameObject[] players;
 
     public Transform[] SpawnPoints;
 
+    public GameObject LoadingCam;
+
+    public int kills = 0;
+    public int death = 0;
+    public int ping = 0;
+
+    private Dictionary<int, TeamID.MyTeam> playerTeams = new Dictionary<int, TeamID.MyTeam>();
     private void Awake()
     {
         Instance = this;
@@ -18,6 +25,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        LoadingCam.gameObject.SetActive(true);
         Debug.Log("Connecting...");
         PhotonNetwork.ConnectUsingSettings();
     }
@@ -43,7 +51,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         Debug.Log("We are in a lobby");
-
+        LoadingCam.gameObject.SetActive(false);
         ReSpawnPlayer();
 
     }
@@ -51,25 +59,82 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public void ReSpawnPlayer()
     {
         int randomPos = Random.Range(0, SpawnPoints.Length);
+
         GameObject _player = PhotonNetwork.Instantiate(players[GameManager.instance.Index].name, SpawnPoints[randomPos].position, Quaternion.identity);
+
+        _player.GetComponent<Health>().CanTakeDamage = true;
         _player.GetComponent<Health>().isLocal = true;
+        _player.GetComponent<Health>().CurrentHealth = GameManager.instance.classes[GameManager.instance.Index].HP;
         _player.GetComponent<PlayerSetup>().isLocalPlayer();
         _player.GetComponentInChildren<Health>().SetHealthTexColor(GameManager.instance.classes[GameManager.instance.Index].materialForPlayer.color);
         _player.GetComponentInChildren<Health>().CanSpawn = true;
-        //UpdatePlayer(_player);
+        _player.GetComponent<PhotonView>().RPC("SetNickName", RpcTarget.AllBuffered, GameManager.instance.MyNickname);
+
+        int CTCount = TeamCount(TeamID.MyTeam.CT);
+        int Tcount = TeamCount(TeamID.MyTeam.T);
+
+        if(CTCount >= Tcount)
+            AssignTeam(PhotonNetwork.LocalPlayer, TeamID.MyTeam.T);
+        else
+            AssignTeam(PhotonNetwork.LocalPlayer, TeamID.MyTeam.CT);
+
+        PhotonNetwork.LocalPlayer.NickName = GameManager.instance.MyNickname;
     }
 
-    /* private void UpdatePlayer(GameObject _player)
-     {
-         GameManager manager = GameManager.instance;
-         _player.GetComponent<MeshRenderer>().material = manager.classes[manager.Index].materialForPlayer;
+    private int TeamCount(TeamID.MyTeam team)
+    {
+        int count = 0;
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            if(playerTeams.TryGetValue(player.ActorNumber, out TeamID.MyTeam value))
+            {
+                if(value == team)
+                {
+                    count += 1;
+                }
+            }
+        }
+        return count;
+    }
 
-         _player.GetComponent<PhotonView>().RPC("SetHealth", RpcTarget.All, manager.classes[manager.Index].HP);
-         _player.GetComponentInChildren<Health>().SetHealthTexColor(manager.classes[manager.Index].materialForPlayer.color);
+    public void AssignTeam(Player player, TeamID.MyTeam team)
+    {
+        if (playerTeams.TryGetValue(player.ActorNumber,out TeamID.MyTeam value))
+        {
+            Debug.Log("Anahtar Bulunmakta");
+        }
+        else
+        {
+            Debug.Log("Anahtar Bulunmamakta ve veri eklendi");
+            Debug.Log(player.ActorNumber);
+            playerTeams[player.ActorNumber] = team;
+        }
+    }
 
-         _player.GetComponentInChildren<Weapon>().Damage = manager.classes[manager.Index].Damage;
+    public TeamID.MyTeam GetPlayerTeam(Player player)
+    {
+        if (playerTeams.TryGetValue(player.ActorNumber, out TeamID.MyTeam value))
+        {
+            return value;
+        }
+        return TeamID.MyTeam.AllFree; // Varsayýlan olarak AllFree döner
+    }
 
-         _player.GetComponentInChildren<_Movement>().walkSpeed = manager.classes[manager.Index].MoveSpeed;
-         _player.GetComponentInChildren<_Movement>().RunSpeed = manager.classes[manager.Index].RunSpeed;
-     }*/
+    public void SetHashes()
+    {
+        try
+        {
+            Hastable hash = PhotonNetwork.LocalPlayer.CustomProperties;
+
+            hash["kills"] = kills;
+            hash["death"] = death;
+            hash["ping"] = ping;
+            hash["Team"] = TeamID.MyTeam.AllFree;
+            PhotonNetwork.LocalPlayer.SetCustomProperties(hash);
+        }
+        catch
+        {
+
+        }
+    }
 }

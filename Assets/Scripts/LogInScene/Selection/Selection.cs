@@ -1,16 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Selection : MonoBehaviour
 {
+    public int CurrentLayer = 0; //0 for Navigation, 1 for Nickname
+
     [Header("Buttons")]
+    public GameObject NavigationParent;
+    public GameObject NickNameParent;
     public Button LeftButton;
     public Button RightButton;
+    public Button NickNameGo;
     public Button StartButton;
+    public Button BackButton;
 
     [Header("Sliders")]
     public Slider HPSider;
@@ -27,13 +34,24 @@ public class Selection : MonoBehaviour
     public TextMeshProUGUI BulletPerSecondSliderValue;
 
     [Header("Guns")]
-    public GameObject Scar;
-    public GameObject Shotgun;
-    public GameObject CZ_Scorpion;
+    public GameObject[] Guns = new GameObject[3];
+
+
+    [Header("Body")]
+    public GameObject[] Bodys = new GameObject[3];
+
+
+    [Header("NickName")]
+    public TMP_InputField NickNameField;
+
+    [Header("Settings")]
+    public Button SettingsButton;
+    public GameObject Cam1;
+    public GameObject Cam2;
+    public GameObject SettingsCanvas;
 
     private int index = 0;
-    [Space]
-    public GameObject Player;
+
     private GameManager gameManager;
     private void Start()
     {
@@ -41,6 +59,9 @@ public class Selection : MonoBehaviour
         LeftButton.onClick.AddListener(Left);
         RightButton.onClick.AddListener(Right);
         StartButton.onClick.AddListener(_StartGame);
+        NickNameGo.onClick.AddListener(GoNickNameSelection);
+        SettingsButton.onClick.AddListener(Settings);
+        BackButton.onClick.AddListener(Back);
         UpdateClasses();
     }
 
@@ -63,12 +84,62 @@ public class Selection : MonoBehaviour
     void _StartGame()
     {
         gameManager.Index = index;
+        gameManager.MyNickname = NickNameField.text; 
         SceneManager.LoadScene(1);
     }
+
+    void GoNickNameSelection()
+    {
+        CurrentLayer = 0;
+        BackButton.gameObject.SetActive(true);
+        NavigationParent.SetActive(false);
+        NickNameParent.SetActive(true);
+    }
+
+    void Back()
+    {
+        GameObject[] objects = { NavigationParent, NickNameParent, SettingsCanvas};
+        _Back(objects, CurrentLayer);
+        objects.Free();
+    }
+
+    void Settings()
+    {
+        NavigationParent.SetActive(false);
+        SettingsCanvas.SetActive(true);
+        CurrentLayer = 0;
+    }
+
+    private void _Back(GameObject[] parents, int ToBack)
+    {
+        for (int i = 0; i < parents.Length; i++)
+            parents[i].SetActive(false);
+
+        switch (ToBack)
+        {
+            case 0:
+                NavigationParent.SetActive(true);
+                Cam1.SetActive(true);
+                Cam2.SetActive(false);
+                break;
+            case 1:
+                NickNameParent.SetActive(true);
+                Cam1.SetActive(true);
+                Cam2.SetActive(false);
+                break;
+            case 2:
+                SettingsCanvas.SetActive(true);
+                Cam1.SetActive(false);
+                Cam2.SetActive(true);
+                break;
+            default:
+                break;
+        }
+    }
+
     void UpdateClasses()
     {
-        Player.GetComponent<MeshRenderer>().material = gameManager.materialsForPlayer[index];
-
+        BackButton.gameObject.SetActive(false);
         HPSider.value = gameManager.classes[index].HP;
         HPSliderValue.text = HPSider.value.ToString();
 
@@ -84,22 +155,13 @@ public class Selection : MonoBehaviour
         BulletPerSecondSlider.value = gameManager.classes[index].BulletPerSecond;
         BulletPerSecondSliderValue.text = BulletPerSecondSlider.value.ToString();
 
-        switch (index)
+
+        for (int i = 0; i < Bodys.Length; i++)
         {
-            case 0:
-                Scar.SetActive(true);
-                CZ_Scorpion.SetActive(false);
-                break;
-            case 1:
-                Scar.SetActive(false);
-                Shotgun.SetActive(true);
-                break;
-            case 2:
-                Shotgun.SetActive(false);
-                CZ_Scorpion.SetActive(true);
-                break;
-            default:
-                break;
+            Bodys[i].SetActive(false);
+            Guns[i].SetActive(false);
         }
+        Bodys[index].SetActive(true);
+        Guns[index].SetActive(true);
     }
 }

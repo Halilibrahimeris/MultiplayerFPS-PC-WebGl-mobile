@@ -19,7 +19,7 @@ MonoBehaviour:
     AppIdVoice: 
     AppVersion: 
     UseNameServer: 1
-    FixedRegion: 
+    FixedRegion: tr
     Server: 
     Port: 0
     ProxyServer: 
@@ -44,6 +44,8 @@ MonoBehaviour:
   - StepSound_RPC
   - FireSound_RPC
   - ReloadSondRPC
+  - SetNickName
+  - EmptyFireSound_RPC
   DisableAutoOpenWizard: 1
-  ShowSettings: 0
+  ShowSettings: 1
   DevRegionSetOnce: 1

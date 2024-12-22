@@ -31,6 +31,8 @@ public class MouseLook : MonoBehaviour
     {
         instance = this;
 
+        sensitivity = new Vector2(GameManager.instance.settingsHolder.sensivity, GameManager.instance.settingsHolder.sensivity);
+
         sensitivity.x = Sensivity;
         sensitivity.y = Sensivity;
 

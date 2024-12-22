@@ -10,6 +10,7 @@ public class SoundManager : MonoBehaviour
     public AudioClip[] StepSounds;
     [Header("Fire")]
     public AudioClip[] FireSounds;
+    public AudioClip EmptySound;
     [Header("Reload")]
     public AudioClip Reload;
 
@@ -47,6 +48,17 @@ public class SoundManager : MonoBehaviour
     {
         int index = Random.Range(0, FireSounds.Length);
         SoundPlayer(FireSounds[index], false);
+    }
+
+    public void EmptyFireSound()
+    {
+        GetComponent<PhotonView>().RPC("EmptyFireSound_RPC", RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void EmptyFireSound_RPC()
+    {
+        SoundPlayer(EmptySound, false);
     }
     #endregion
     #region ReloadSound

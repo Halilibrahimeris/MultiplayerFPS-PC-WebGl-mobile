@@ -16,13 +16,24 @@ public class Classes
     public int BulletPerSecond;
 }
 
+[Serializable]
+public class SettingsHolder
+{
+    public float sensivity;
+}
+
 public class GameManager : MonoBehaviour
 {
     public List<Classes> classes;
+    public SettingsHolder settingsHolder;
     public static GameManager instance;
-
+    [Space]
+    public string MyNickname;
+    [Space]
     public List<Material> materialsForPlayer;
     public int Index;
+    [Space]
+    public string myIp;
 
     void Awake()
     {

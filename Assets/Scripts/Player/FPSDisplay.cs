@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Photon.Pun;
 public class FPSDisplay : MonoBehaviour
 {
     float deltaTime = 0.0f;
     float timer = 0.0f; // Güncelleme zamanlayýcýsý
-    float updateInterval = 0.7f; // Güncelleme aralýðý (saniye)
-
+    float updateInterval = 1f; // Güncelleme aralýðý (saniye)
+    int ping;
     private void Start()
     {
         // V-Sync'i devre dýþý býrak
@@ -30,7 +30,12 @@ public class FPSDisplay : MonoBehaviour
             // Güncellenmiþ FPS ve süreyi hesapla
             float msec = deltaTime * 1000.0f;
             float fps = 1.0f / deltaTime;
-            string text = string.Format("{0:0.0} ms ({1:0.} fps)", msec, fps);
+            ping = PhotonNetwork.GetPing();
+
+            string text = string.Format("{0:0.0} ms ({1:0.} fps) ({2} ping)", msec, fps, ping);
+
+            RoomManager.Instance.ping = ping;
+            RoomManager.Instance.SetHashes();
 
             // Güncellenmiþ metni OnGUI metoduna aktar
             fpsText = text;

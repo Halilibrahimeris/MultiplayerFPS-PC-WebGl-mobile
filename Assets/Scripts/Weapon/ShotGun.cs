@@ -9,7 +9,6 @@ public class ShotGun : Weapon
     [Header("Shotgun")]
     [SerializeField] private int pelletCount = 10; 
     [SerializeField] private float spreadAngle = 10f; 
-    [SerializeField] private GameObject bulletTrailPrefab; 
     [SerializeField] private Transform FirePoint;
     [SerializeField] private AnimationClip ReloadStartAnim;
     [SerializeField] private AnimationClip ReloadOneAnim;
@@ -40,19 +39,16 @@ public class ShotGun : Weapon
             if (Physics.Raycast(ray, out RaycastHit hit, 100f, hitLayer))
             {
                 // SpawnBullet trail
-                CreateBulletTrail(ray.origin, hit.point);
+                CreateBulletTrail(hit.point);
 
-                if (hit.transform.gameObject.GetComponent<Health>())
+                if (hit.transform.gameObject.GetComponentInParent<Health>())
                 {
                     Debug.Log(hit.collider.gameObject.name);
-                    
-                    if(hit.transform.GetComponent<BodyIndex>() != null)
-                    {
-                        int hitIndex = hit.collider.gameObject.GetComponent<BodyIndex>().id;
-                        hit.transform.gameObject.GetComponent<PhotonView>().RPC("TakeDamage", RpcTarget.All, Damage, hitIndex);
-                        Health helth = hit.transform.GetComponentInParent<Health>();
-                        PlayerInfoText.text = helth.gameObject.name + "/ Health :" + helth.CurrentHealth.ToString();
-                    }
+
+                    int hitIndex = hit.collider.gameObject.GetComponent<BodyIndex>().id;
+                    hit.transform.gameObject.GetComponent<PhotonView>().RPC("TakeDamage", RpcTarget.All, Damage, hitIndex);
+                    Health helth = hit.transform.GetComponentInParent<Health>();
+                    PlayerInfoText.text = helth.gameObject.name + "/ Health :" + helth.CurrentHealth.ToString();
                 }
             }
         }
@@ -92,20 +88,5 @@ public class ShotGun : Weapon
         _animator.SetBool("Reload",true);
         Invoke("Reloaded", ReloadStartAnim.length);
         CanCallAmmo = false;
-    }
-
-    private void CreateBulletTrail(Vector3 start, Vector3 end)
-    {
-        GameObject trail = Instantiate(bulletTrailPrefab, start, Quaternion.identity);
-        LineRenderer lineRenderer = trail.GetComponent<LineRenderer>();
-
-        if (lineRenderer != null)
-        {
-            lineRenderer.SetPosition(0, start);
-            lineRenderer.SetPosition(1, end);
-        }
-
-
-        Destroy(trail, 0.5f); 
     }
 }

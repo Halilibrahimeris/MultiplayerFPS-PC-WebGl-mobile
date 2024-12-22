@@ -9,6 +9,7 @@ public class WeaponAnimationEvent : MonoBehaviour
 
     [Header("Sounds")]
     public SoundManager soundManager;
+    [HideInInspector] public bool EmptySound = false;
     public void CanTakeAnyThing()
     {
         animator.SetBool("CanTake", true);
@@ -28,7 +29,11 @@ public class WeaponAnimationEvent : MonoBehaviour
 
     public void PlayShootSound()
     {
-        soundManager.PlayFireSound();
+        if (!EmptySound)
+            soundManager.PlayFireSound();
+        else
+            soundManager.EmptyFireSound();
+
     }
     
     public void PlayReloadSound()
